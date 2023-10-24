@@ -1,0 +1,86 @@
+[
+  {
+    "name": "Jonny Wilkinson",
+    "position": "Fly-half",
+    "age": 42,
+    "team": "England",
+    "nationality": "England"
+  },
+  {
+    "name": "Richie McCaw",
+    "position": "Flanker",
+    "age": 41,
+    "team": "New Zealand",
+    "nationality": "New Zealand"
+  }
+]
+You can expand the data set with more players and their corresponding information.
+
+Setting up the Node.js and Express API:
+
+Install necessary dependencies by running npm install express mongoose body-parser in your project directory.
+
+Create a file named server.js and add the following code:
+
+const express = require('express');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+
+// Create the Express app
+const app = express();
+
+// Configure body-parser to handle JSON data
+app.use(bodyParser.json());
+
+// Connect to MongoDB
+mongoose.connect('mongodb://localhost/rugby_players', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+// Define the player schema
+const playerSchema = new mongoose.Schema({
+  name: String,
+  position: String,
+  age: Number,
+  team: String,
+  nationality: String,
+});
+
+// Create the player model
+const Player = mongoose.model('Player', playerSchema);
+
+// Define the API endpoints
+app.get('/players', async (req, res) => {
+  const players = await Player.find();
+  res.json(players);
+});
+
+app.get('/players/:id', async (req, res) => {
+  const player = await Player.findById(req.params.id);
+  res.json(player);
+});
+
+app.post('/players', async (req, res) => {
+  const player = new Player(req.body);
+  await player.save();
+  res.json(player);
+});
+
+app.put('/players/:id', async (req, res) => {
+  const player = await Player.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+  });
+  res.json(player);
+});
+
+app.delete('/players/:id', async (req, res) => {
+  await Player.findByIdAndRemove(req.params.id);
+  res.sendStatus(204);
+});
+
+// Start the server
+app.listen(3000, () => {
+  console.log('Server listening on port 3000');
+});
+
